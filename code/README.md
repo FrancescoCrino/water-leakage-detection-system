@@ -3,6 +3,9 @@ This folder contains three file:
   - Makefile 
   - Makefile.ethos.conf
 
+
+The program is tested on a linux environment and the following instructions are valid if working on a linux environment.
+
 In order to run this program we need to clone the [RIOT-OS](https://github.com/RIOT-OS/RIOT) github repository that we will use as RIOT base folder in the Makefile.
 We also need to install on your local pc the [mosquitto broker](https://mosquitto.org/) and clone the [mosquitto RSMB](https://github.com/eclipse/mosquitto.rsmb) repository to use it as MQTT-SN broker.
 
@@ -36,7 +39,7 @@ mosquitto -c .../conf/my_local_bridge.conf
 
 You need to replace the information related to the aws service you want to connect with in the conf file.
 
-**Start the mosquitto RSMB MQTT-SN server **
+**Start the mosquitto RSMB MQTT-SN server**
 
 Now that our transparet bridge is set up we can start the mosquitto RSMB MQTT-SN server.
 
@@ -50,7 +53,7 @@ cd .../mosquitto.rsmb/rsmb
 Executing those commands rsmb server will connect with the mosquitto transparent bridge and it is ready to receive and forward messages.
 
 
-**Start main program **
+**Start main program**
 
 Go inside the code folder and execute the following command to build and flash the program inside the Nucleo-F446ZE board.
 If you are using a different board change it in the Makefile.
