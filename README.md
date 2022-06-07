@@ -7,6 +7,21 @@ In European Union, more than half of the population lives in agglomerations or m
 For that reason one of the big challenges for the smart cities of the future is to reduce the waste of water in the urban area. If monitoring an entire big water distribution network, find the leaks of water and locate them could be very challenging, monitoring the home wastewater could be easyer.
 My water leakage detection system aims to detect a water leak in an office or home environment and notifies the problem to the user. The system is equipped of a buzzer that will signal the malfunctioning of a specific tap also with an acoustic signal.
 
+## Sensors
+
+- ***HC-SR501 Passive Infrared (PIR) Motion Sensor***:
+
+
+- ***Water Flow Sensor***:
+
+
+## Actuators
+
+- ***Led***:
+
+- ***Active Buzzer***:
+
+
 ## How the system works
 
 The water leakage system proposed in this work is composed by the main mather board that is an STM32 Nucleo-F44ZE connected with two sensors, a PIR motion sensor and a water flow sensor, and two actuators, one led and one active buzzer. (Refer to [Technology]() document for details)
