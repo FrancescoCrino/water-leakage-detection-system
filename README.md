@@ -28,19 +28,17 @@ My water leakage detection system aims to detect a water leak in an office or ho
 
 In this section we will see the architecture of the entire system starting describing the network structure and its component, how the cloud works and finally we will see how practically connect the hardwares described above.
 
+<img src="images/arch.JPG" width="1000" align="center"/>
 
+The network architechture of the system is a chain of elements exchanging messages as described in the image above. In particular the main elements of the architecture are:<br/>
 
-In order to transmits the data collected by the sensors we need to connect the Nucleo board to a MQTT-SN broker thorugh which the RIOT-OS application will publish the sensor values over UDP/IPv6. We also need to set up an MQTT-SN/MQTT transparent bridge in order to subscribe to a predefined set of topics on the MQTT-SN broker and forward all messages received to the cloud service throug MQTT protocol. 
-The following schema represents the network structure.
+- ***Board Nucleo-F446ZE***: This is the main board of our system that is connected with all the sensors and the actuators. The board collect the sensors data, puts the data in messages and forword the messages to the Mosquitto RSMB broker. To communicate with Mosquitto RSMB, the board subscribes to the topic "topic-out" and sends the data through MQTT-SN. The connection of the board is made possible thanks to the Ethos vistual network interface given by RIOT.
+- ***Mosquitto RSMB***: The Really Small Message Broker is a server implementation of the MQTT and MQTT-SN protocols. Since Mosquitto does not support MQTT-SN protocol, the role of Mosquitto RSMB is to forward the incoming MQTT-sn messgaes to Mosquitto through MQTT. In particular it receives messages by the board on topic "topic-in" and send messages to Mosquitto on topic "topic-out". You can find more details about Mosquitto RSMB here: [Mosquitto RSMB Docimentation](https://github.com/eclipse/mosquitto.rsmb)
+- ***Mosquitto MQTT Broker***: Mosquitto is a MQTT broker that receives messages from RSMB and forward them to the MQTT broker of AWS. All the messages received by the RSMB are forwarded to the AWS MQTT broker with topic "wl_sensors" with QOS = 1 that guarantees that a message is delivered at least one time to the receiver. The sender stores the message until it gets a PUBACK packet from the receiver that acknowledges receipt of the message. You can find more details about Mosquitto MQTT broker visiting [Mosquitto official page](https://mosquitto.org/)
+- ***Amazon Web Services - AWS***:
+- ***Front-End***: The front-end is a http web page developed using django framework. The page sends an API request to AWS that returns the 15 most recent data stored in the DynamoDB table. When the data are received they are used to plot a graph showing three lines: one representing the water data, one representing the mouvement data and one for the leak.
 
-*Mettere immagine network*
-
-More in detail as MQTT-SN broker I use the [mosquitto rsmb broker](https://github.com/eclipse/mosquitto.rsmb) that is a server implementation of the MQTT and MQTT-SN protocols. Since the RIOT-OS uses MQTT-SN it can send message to mosquitto rsmb broker that will forward all the incoming messages to [mosquitto broker](https://mosquitto.org/) through MQTT. 
-The mosquitto broker needs to be set on the local machine and modifying its configuration file it can be connected to cloud service. Once connected to the cloud service mosquitto can act as MQTT-SN/MQTT transparent bridge by forwarding all the message received by the rsmb broker to the cloud.
-
-For the cloud part I use [AWS](https://aws.amazon.com/it/) cloud services. All the messages received by the mosquitto broker are stored in a dynamoDb and in a S3 bucket.
-
-
+*Mettere immagine frontend*
 
 ## How the system works
 
