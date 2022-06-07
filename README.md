@@ -9,17 +9,20 @@ My water leakage detection system aims to detect a water leak in an office or ho
 
 ## Sensors
 
-- ***HC-SR501 Passive Infrared (PIR) Motion Sensor***:
+- ***HC-SR501 Passive Infrared (PIR) Motion Sensor***: <img src="images/pir.jpg" width="100" align="right"/> <br/> This sensor is used to capture movements near the monitored tap. If there is movement near the tap it sends a positive signal otherwise 0. In our system the PIR is used to understand wether there is someone using the tap or not. The datasheet of the HC-SR501 PIR can be found here: [PIR Datasheet](https://pdf1.alldatasheet.com/datasheet-pdf/view/1131987/ETC2/HC-SR501.html).
 
+- ***Water Flow Sensor***:<img src="images/wf.jpg" width="100" align="right"/> <br/> This sensor monitor wheter there is water flow exiting from the tap or not. If there is some water flow exiting from the tap it sends a positive signal otherwise it sends 0. The sensor has a small turbine that is activated by the flow. The movement of the turbine actives the magnetic Hall effect sensor, placed near the turbine, that generates the output signal. In our system this sensor is used to understand wether the tap is open or not. 
 
-- ***Water Flow Sensor***:
 
 
 ## Actuators
+<br/>
 
-- ***Led***:
+- ***Led***: <img src="images/led.jpg" width="70" align="right"/> <br/> Classic led used to notify if the system is on. The led is always on while the system is working.
 
-- ***Active Buzzer***:
+<br/>
+
+- ***Active Buzzer***: <img src="images/active-buzzer.jpg" width="100" align="right"/> <br/> The active buzzer is turned on when a leakage is dected, in particular the usage of the active buzzer is to use the acoustic signa to keep the attention of someone that can close the tap stopping the leak of water. As soon as the tap is closed the buzzer stops. The datasheet of the active buzzer is available here: [Active Buzzer Datasheet](https://components101.com/sites/default/files/component_datasheet/Buzzer%20Datasheet.pdf).
 
 
 ## How the system works
