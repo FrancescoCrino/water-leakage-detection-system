@@ -54,6 +54,46 @@ The network architechture of the system is a chain of elements exchanging messag
 
 *Mettere immagine frontend*
 
+- ***Circuit Architecture***: The circuit model is the following: <br/> <img src="images/wl-phis-arch.png" width="500" /> <br/> 
+  - The bread board is connected with the ground pin of the board and with the 5V pin of the board, then all the sensors and the actuator are fed with 5V. 
+  - We put a resistor of 220Ohm in series with the led. They are connected directly to the 5V line. 
+  - The active buzzer is connecte to the pin D2 of our board and it is activated in case of leak.
+  - The water flow sensor and the PIR are conncted to A0 and A1 respectively. Both A0 and A1 are adc input pins. <br/> 
+  
+ The board Nucleo-F446ZE the adc pins are not activated by default so we need to modify Makefile.features and periph_conf.h that we find under RIOT/boards/nucleo-f446ze.
+ In particular we need to add to RIOT/boards/nucleo-f446ze/Makefile.features the line
+ ```
+FEATURES_PROVIDED += periph_adc
+```
+And then we also need to add to RIOT/boards/nucleo-f446ze/periph_conf.h the following lines:
+ ```
+/**
+ * @name   ADC configuration
+ *
+ * Note that we do not configure all ADC channels.
+ * Instead, wejust define 6 ADC channels, for the Nucleo
+ * Arduino header pins A0-A5 and the internal VBAT channel.
+ *
+ * @{
+ */
+static const adc_conf_t adc_config[] = {
+    {GPIO_PIN(PORT_A, 3), 0, 3},
+    {GPIO_PIN(PORT_C, 0), 0, 10},
+    {GPIO_PIN(PORT_C, 3), 0, 13},
+    {GPIO_PIN(PORT_F, 3), 0, 9},
+    {GPIO_PIN(PORT_F, 5), 0, 15},
+    {GPIO_PIN(PORT_F, 10), 0, 8},
+    {GPIO_UNDEF, 0, 18}, /* VBAT */
+};
+
+#define VBAT_ADC            ADC_LINE(6) /**< VBAT ADC line */
+#define ADC_NUMOF           ARRAY_SIZE(adc_config)
+/** @} */
+```
+
+At this point we have configured the pins of our board correspondant to the arduino layout pins A0-A5. 
+
+
 ## How the system works
 
 The water leakage system proposed in this work is composed by the main mather board that is an STM32 Nucleo-F44ZE connected with two sensors, a PIR motion sensor and a water flow sensor, and two actuators, one led and one active buzzer. (Refer to [Technology]() document for details)
