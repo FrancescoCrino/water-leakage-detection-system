@@ -11,7 +11,7 @@ We also need to install on your local pc the [mosquitto broker](https://mosquitt
 
 Once we have completed our local set up we can start deploying our network through the following steps.
 
-***Set up of our network virtual interfaces***
+## Set up of our network virtual interfaces
 
 At first we need to create the network virtual interfaces to connect all our network components locally
 
@@ -25,7 +25,7 @@ Then we need to assign a site-global prefix to the tapbr0 interface to let mosqu
 sudo ip a a fec0:affe::1/64 dev tapbr0
 ```
 
-***Start the mosquitto MQTT-SN/MQTT transparent bridge***
+## Start the mosquitto MQTT-SN/MQTT transparent bridge
 
 Now we can start our mosuqitto that will act as MQTT-SN/MQTT transparent bridge. 
 With the following command we will launch mosquitto that will use as a configuration file the file my_local_bridge.conf contained in the [conf directory](https://github.com/FrancescoCrino/water-leakage-detection-system/tree/main/conf).
@@ -39,7 +39,7 @@ mosquitto -c .../conf/my_local_bridge.conf
 
 You need to replace the information related to the aws service you want to connect with in the conf file.
 
-***Start the mosquitto RSMB MQTT-SN server***
+## Start the mosquitto RSMB MQTT-SN server
 
 Now that our transparet bridge is set up we can start the mosquitto RSMB MQTT-SN server.
 Put the file rsmb-config.conf located in conf directory [conf directory](https://github.com/FrancescoCrino/water-leakage-detection-system/tree/main/conf) inside the folder mosquitto.rsmb/rsmb and execute the following command:
@@ -54,7 +54,7 @@ cd .../mosquitto.rsmb/rsmb
 Executing those commands rsmb server will connect with the mosquitto transparent bridge and it is ready to receive and forward messages.
 
 
-***Start main program***
+## Start main program
 
 Go inside the code folder and execute the following command to build and flash the program inside the Nucleo-F446ZE board.
 If you are using a different board change it in the Makefile.
@@ -79,7 +79,7 @@ At this point the board is connected with the rsmb broker and we can start the m
 
 After executing the command "run" we have the collected values printed on the terminal and at the same time they are sent to the cloud.
 
-***Restart the system***
+## Restart the system
 
 When we terminate the main process we need to reset the network virtual iterfaces before to restart it.
 To do that we need to stop the mosquitto transparent bridge and the mosquitto rsmb and then executing the following command:
