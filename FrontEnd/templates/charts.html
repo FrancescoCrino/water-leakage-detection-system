@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+<script>
+{% block jquery %}
+
+var endpoint = '/api/chart/data/'
+var water_data = []
+var mov_data = []
+var leak_data = []
+var date_data = []
+var labels = []
+var data = {}
+$.ajax({
+    method: "GET",
+    url: endpoint,
+    success: function(data){
+
+        water_data = data.data.water
+        mov_data = data.data.mov
+        leak_data = data.data.leak
+        date_data = data.data.date
+
+        labels = data.labels
+
+        //console.log(water_data)
+        //console.log(mov_data)
+        //console.log(leak_data)
+        //console.log(date_data)
+        //console.log(labels)
+
+        setCompleteChart()
+        setWaterChart()
+        setMovChart()
+        setLeakChart()
+        createTable()
+
+    },
+    error: function(error_data){
+        console.log("error")
+        console.log(error_data)
+    }
+})
+
+function setCompleteChart(){
+
+    var myCanvas = document.getElementById("completeChart");
+
+    Chart.defaults.global.defaultFontFamily = "Lato";
+    Chart.defaults.global.defaultFontSize = 14;
+
+    var dataWater = {
+        label: "water",
+        data: water_data,
+        lineTension: 0,
+        fill: false,
+        borderColor: 'green'
+    };
+
+    var dataMov = {
+        label: "movement",
+        data: mov_data,
+        lineTension: 0,
+        fill: false,
+        borderColor: 'blue'
+    };
+
+    var dataLeak = {
+        label: "leak",
+        data: leak_data,
+        lineTension: 0,
+        fill: false,
+        borderColor: 'red'
+    };
+
+    var wlData = {
+        labels: labels,
+        datasets: [dataMov, dataWater, dataLeak]
+    };
+
+    var chartOptions = {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+                boxWidth: 80,
+                fontColor: 'black'
+                
+            }
+        }       
+    };
+
+    var lineChart = new Chart(myCanvas, {
+        type: 'line',
+        data: wlData,
+        options: chartOptions
+    });
+
+}
+
+function setWaterChart(){
+
+    var waterCanvas = document.getElementById("waterChart");
+
+    Chart.defaults.global.defaultFontFamily = "Lato";
+    Chart.defaults.global.defaultFontSize = 14;
+
+    var dataWater = {
+        label: "water",
+        data: water_data,
+        lineTension: 0,
+        fill: false,
+        borderColor: 'green'
+    };
+
+    var wlData = {
+        labels: labels,
+        datasets: [dataWater]
+    };
+
+    var chartOptions = {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+                boxWidth: 80,
+                fontColor: 'black'
+            }
+        }       
+    };
+
+    var lineChart = new Chart(waterCanvas, {
+        type: 'line',
+        data: wlData,
+        options: chartOptions
+    });
+}
+
+function setMovChart(){
+
+    var movCanvas = document.getElementById("movChart");
+
+    Chart.defaults.global.defaultFontFamily = "Lato";
+    Chart.defaults.global.defaultFontSize = 14;
+
+    var dataMov = {
+        label: "movement",
+        data: mov_data,
+        lineTension: 0,
+        fill: false,
+        borderColor: 'blue'
+    };
+
+    var wlData = {
+        labels: labels,
+        datasets: [dataMov]
+    };
+
+    var chartOptions = {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+                boxWidth: 80,
+                fontColor: 'black'
+            }
+        }       
+    };
+
+    var lineChart = new Chart(movCanvas, {
+        type: 'line',
+        data: wlData,
+        options: chartOptions
+    });
+}
+
+function setLeakChart(){
+
+    var leakCanvas = document.getElementById("leakChart");
+
+    Chart.defaults.global.defaultFontFamily = "Lato";
+    Chart.defaults.global.defaultFontSize = 14;
+
+    var dataLeak = {
+        label: "leak",
+        data: leak_data,
+        lineTension: 0,
+        fill: false,
+        borderColor: 'red'
+    };
+
+    var wlData = {
+        labels: labels,
+        datasets: [dataLeak]
+    };
+
+    var chartOptions = {
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+                boxWidth: 80,
+                fontColor: 'black'
+            }
+        }
+    };
+
+    var lineChart = new Chart(leakCanvas, {
+        type: 'line',
+        data: wlData,
+        options: chartOptions
+    });
+}
+
+function createTable(){
+
+    //var myTable = document.getElementById("myTable"); 
+    var myTable = document.createElement("TABLE");
+
+    myTable.setAttribute("id", "myTable");
+    document.body.appendChild(myTable);
+
+    var row_title = document.getElementById("myTable").insertRow(0);
+
+    // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
+    var cell1 = row_title.insertCell(0);
+    var cell2 = row_title.insertCell(1);
+    var cell3 = row_title.insertCell(2);
+    var cell4 = row_title.insertCell(3);
+
+    // Add some text to the new cells:
+    cell1.innerHTML = "water";
+    cell2.innerHTML = "movement"; 
+    cell3.innerHTML = "leak"; 
+    cell4.innerHTML = "date"; 
+
+    console.log(water_data.length)
+
+    for (let i = 0; i < water_data.length; i++) {
+
+        var new_row = document.getElementById("myTable").insertRow(i+1);
+
+        cell1 = new_row.insertCell(0);
+        cell2 = new_row.insertCell(1);
+        cell3 = new_row.insertCell(2);
+        cell4 = new_row.insertCell(3);
+        
+        cell1.innerHTML = water_data[i];
+        cell2.innerHTML = mov_data[i]; 
+        cell3.innerHTML = leak_data[i]; 
+        cell4.innerHTML = date_data[i]; 
+    }
+}
+
+{% endblock %}
+</script>
+
+{% block content %}
+
+
+<div class="container">
+    <div class="row justify-content-center" style="border: #ffffff 15px solid">
+        <div class="col-sm-2">
+            <img src="{% static 'swdb.JPG' %}" alt="Save water, drink beer!" width="150" height="150" class="center">
+        </div>
+        <div class="col-sm-6">
+            <img src="{% static 'wld-title.JPG' %}" alt="title" width="700" height="150" class="center">
+        </div>
+    </div> 
+    <div class='row' style="border: #ffffff 20px solid">
+        <div class='col-sm-12'>
+            <div class='col-sm-8'>
+                <canvas id="completeChart" width="800" height="500"></canvas>
+                <canvas id="waterChart" width="300" height="100"></canvas>
+                <canvas id="movChart" width="300" height="100"></canvas>
+                <canvas id="leakChart" width="300" height="100"></canvas>
+            </div>
+            <div class='col-sm-4' style="border: #ffffff 10px solid">
+                <table id="myTable" width="400" height="200"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
