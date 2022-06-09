@@ -11,8 +11,6 @@
 #include "net/emcute.h"
 #include "net/ipv6/addr.h"
 
-#include <time.h>
-
 #ifndef EMCUTE_ID
 #define EMCUTE_ID           ("gertrud")
 #endif
@@ -25,7 +23,12 @@ static char stack[THREAD_STACKSIZE_DEFAULT];
 static msg_t queue[8];
 
 static emcute_sub_t subscriptions[NUMOFSUBS];
-//static char topics[NUMOFSUBS][TOPIC_MAXLEN];
+
+#define ADC_IN_USE_1  ADC_LINE(0)
+#define ADC_IN_USE_2  ADC_LINE(1)
+#define ADC_RES     ADC_RES_6BIT
+
+gpio_t pin_buzzer;
 
 // --- connectivity functions ---
 
@@ -138,7 +141,86 @@ static int publish(char *message){
                 t.name, (int)t.id);
         return 1;
     }
+
+    printf("\n Published %i bytes to topic '%s' \n",
+            (int)strlen(message), t.name);
+
     return 0;
+}
+
+void sampling(void){
+
+    int samplew = 0;
+    int samplem = 0;
+    int poss_leak = 0;
+    char data[50];
+
+    printf("\nStarting collecting Data: \n");
+
+    while(1){
+        samplew = adc_sample(ADC_IN_USE_1, ADC_RES);
+        samplem = adc_sample(ADC_IN_USE_2, ADC_RES);
+        if(samplew==63 && samplem==63){
+            printf("\n WATER: %d - MOVEMENT: %d - LEAK: %d ", abs(samplew/63), abs(samplem/63), 0);
+            sprintf(data, "{\"water\":%d,\"movement\":%d,\"leakage\":0}", abs(samplew/63), abs(samplem/63));
+            publish((char *)&data);
+            xtimer_sleep(20);
+        }
+        // If samplew or samplem are not high we sample each 10s
+        else if(samplew!=63 || samplem!=63){
+            // If samplew or samplem are not high, we check after 4 seconds
+            xtimer_sleep(4);
+            samplew = adc_sample(ADC_IN_USE_1, ADC_RES);
+            samplem = adc_sample(ADC_IN_USE_2, ADC_RES);
+            if(samplew==63 && samplem==63){
+                //If the check is negative (water and mov == 63) we wait 16s (+4=20s)
+                printf("\n WATER: %d - MOVEMENT: %d - LEAK: %d ", abs(samplew/63), abs(samplem/63), 0);
+                sprintf(data, "{\"water\":%d,\"movement\":%d,\"leakage\":0}", abs(samplew/63), abs(samplem/63));
+                poss_leak = 0;
+                xtimer_sleep(6);
+            }else if(samplew!=63 && samplem==63){
+                printf("\n WATER: %d - MOVEMENT: %d - LEAK: 0 ", abs(samplew/63), abs(samplem/63));
+                sprintf(data, "{\"water\":%d,\"movement\":%d,\"leakage\":0}", abs(samplew/63), abs(samplem/63));
+                xtimer_sleep(16);
+            }else if(samplew==63 && samplem!=63){
+                // water flowing and no movement -> possible leak
+                poss_leak = poss_leak +1;
+                printf("\n --> POSSIBLE LEAK (%d) (WATER: %d - MOVEMENT: %d - LEAK: 0)", poss_leak, abs(samplew/63), abs(samplem/63));
+                sprintf(data, "{\"water\":%d,\"movement\":%d,\"leakage\":0}", abs(samplew/63), abs(samplem/63));
+                xtimer_sleep(6);
+            }else{
+                printf("\n WATER: %d - MOVEMENT: %d - LEAK: 0", abs(samplew/63), abs(samplem/63));
+                sprintf(data, "{\"water\":%d,\"movement\":%d,\"leakage\":0}", abs(samplew/63), abs(samplem/63));
+                xtimer_sleep(16);
+            }
+            if(poss_leak == 2){
+                // After 2 possible leak -> leak detected
+                poss_leak = 0;
+                while(samplew==63){
+                    printf("\n --> LEAK DETECTED!! PLEASE CLOSE THE TAP!!");
+                    gpio_set(pin_buzzer);
+                    sprintf(data, "{\"water\":%d,\"movement\":%d,\"leakage\":1}", abs(samplew/63), abs(samplem/63));
+                    publish((char *)&data);
+                    xtimer_sleep(5);
+                    samplew = adc_sample(ADC_IN_USE_1, ADC_RES);
+                    samplem = adc_sample(ADC_IN_USE_2, ADC_RES);
+                    if(samplew!=63){
+                        xtimer_sleep(2);
+                        samplew = adc_sample(ADC_IN_USE_1, ADC_RES);
+                        // If no more water flowing out of the tap -> No more leak
+                        if(samplew!=63){
+                            printf("\n\t\t TANK YOU FOR CLOSING THE TAP!!");
+                            sprintf(data, "{\"water\":%d,\"movement\":%d,\"leakage\":0}", abs(samplew/63), abs(samplem/63));
+                        }
+                    }
+                }
+                gpio_clear(pin_buzzer);
+            }
+            else{
+                publish((char *)&data);
+            }
+        }
+    }
 }
 
 static int run(int argc, char **argv){
@@ -148,98 +230,32 @@ static int run(int argc, char **argv){
         return 1;
     }
 
-    gpio_t pin_in_water = GPIO_PIN(PORT_F, 13); //D7
-    gpio_t pin_in_motion = GPIO_PIN(PORT_F, 14); //D4
-    gpio_t pin_led = GPIO_PIN(PORT_F, 15); //D2
-    gpio_t pin_buzzer = GPIO_PIN(PORT_E, 9); //D2
+    /* initialize gpio port out*/
+    pin_buzzer = GPIO_PIN(PORT_F, 15); //D2
 
-    if (gpio_init(pin_in_water, GPIO_IN)) {
-        printf("Error to initialize GPIO_PIN(%d %d)\n", PORT_F, 13);
-        return -1;
-    }
-    if (gpio_init(pin_in_motion, GPIO_IN)) {
-        printf("Error to initialize GPIO_PIN(%d %d)\n", PORT_F, 14);
-        return -1;
-    }
-    if (gpio_init(pin_led, GPIO_OUT)) {
+    if (gpio_init(pin_buzzer, GPIO_OUT)) {
         printf("Error to initialize GPIO_PIN(%d %d)\n", PORT_F, 15);
         return -1;
     }
-    if (gpio_init(pin_buzzer, GPIO_OUT)) {
-        printf("Error to initialize GPIO_PIN(%d %d)\n", PORT_E, 9);
-        return -1;
+
+    /* initialize the ADC line */
+    if (adc_init(ADC_IN_USE_1) < 0) {
+        printf("Initialization of ADC_LINE(%u) failed\n", ADC_IN_USE_1);
+        return 1;
+
+    } else {
+        printf("Successfully initialized ADC_LINE(%u)\n", ADC_IN_USE_1);
     }
 
-    int in_value_water;
-    int in_value_motion;
-    printf("Reading water flux from pin D7 and motion sensor from pin D4 \n");
+    if (adc_init(ADC_IN_USE_2) < 0) {
+        printf("Initialization of ADC_LINE(%u) failed\n", ADC_IN_USE_2);
+        return 1;
 
-    time_t rawtime;
-    struct tm * timeinfo;
-
-    gpio_clear(pin_in_water);
-    gpio_clear(pin_in_motion);
-
-    while (1) {
-
-
-
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-
-        char data[50];
-
-        int leak = 0;
-
-        gpio_set(pin_led); // turn on led
-
-        in_value_water = gpio_read(pin_in_water);
-        in_value_motion = gpio_read(pin_in_motion);
-        printf("\t input value: water: %d  -  motion: %d \n", in_value_water, in_value_motion);
-
-        if(in_value_water > 0 && in_value_motion==0){
-            int leak_count = 0;
-            int water_off = 0;
-            while(water_off < 3 || in_value_motion==0){
-                time(&rawtime);
-                timeinfo = localtime(&rawtime);
-                //gpio_clear(pin_buzzer);
-                in_value_water = gpio_read(pin_in_water);
-                in_value_motion = gpio_read(pin_in_motion);
-                ztimer_sleep(ZTIMER_MSEC, 10 * 1000); // 5 seconds
-                leak_count = leak_count + 1;
-                if(leak_count > 3){
-                    printf("\t\t  -----> LEAKAGE DETECTED: water: %d  -  motion: %d \n", in_value_water, in_value_motion);
-                    // COmando per accendere buzzer
-                    gpio_set(pin_buzzer); // turn on buzzer
-                    printf("\t\t  -----> buzzer on \n");
-                    leak = 1;
-                    sprintf(data, "{\"time\":\"%d:%d:%d\", \"water\":%d,\"movement\":%d,\"leakage\":%d}", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, in_value_water, in_value_motion, leak);
-                }else{
-                    printf("\t\t Possible Leakage detected (%d): water: %d  -  motion: %d\n", leak_count, in_value_water, in_value_motion);
-                    sprintf(data, "{\"time\":\"%d:%d:%d\", \"water\":%d,\"movement\":%d,\"leakage\":%d}", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, in_value_water, in_value_motion, leak);
-                }
-                if(in_value_water == 0){
-                    water_off = water_off + 1;
-                }
-                publish((char *)&data);
-                gpio_clear(pin_in_water);
-                gpio_clear(pin_in_motion);
-            }
-
-        }
-        else {
-            gpio_clear(pin_buzzer);
-            sprintf(data, "{\"time\":\"%d:%d:%d\", \"water\":%d,\"movement\":%d,\"leakage\":%d}", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, in_value_water, in_value_motion, leak);
-            publish((char *)&data);
-        }
-
-        ztimer_sleep(ZTIMER_MSEC, 30 * 1000); // 5 seconds
-
-        gpio_clear(pin_in_water);
-        gpio_clear(pin_in_motion);
-
+    } else {
+        printf("Successfully initialized ADC_LINE(%u)\n", ADC_IN_USE_2);
     }
+
+    sampling();
 
     return 0;
 
@@ -255,7 +271,7 @@ static const shell_command_t shell_commands[] = {
 
 int main(void){
 
-    printf("\n --------------------- WATER FLOW METER  --------------------- \n");
+    printf("\n --------------------- WATER LEAKAGE DETECTION SYSTEM  --------------------- \n");
 
     /* the main thread needs a msg queue to be able to run `ping`*/
     msg_init_queue(queue, ARRAY_SIZE(queue));

@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = wld_conn
+APPLICATION = waterLeakageDetection
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= nucleo-f446ze
@@ -64,6 +64,10 @@ host-tools:
 TERMDEPS += host-tools
 TERMPROG ?= sudo sh $(RIOTTOOLS)/ethos/start_network.sh
 TERMFLAGS ?= $(FLAGS_EXTRAS) $(PORT) $(TAP) $(IPV6_PREFIX) $(ETHOS_BAUDRATE)
+
+# Module to use analog pins
+USEMODULE += analog_util
+FEATURES_REQUIRED += periph_adc
 
 
 include $(RIOTBASE)/Makefile.include
