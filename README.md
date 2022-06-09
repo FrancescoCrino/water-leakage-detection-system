@@ -94,15 +94,32 @@ static const adc_conf_t adc_config[] = {
 At this point we have configured the pins of our board correspondant to the arduino layout pins A0-A5. 
 
 
-## How the system works
+## Practical Test
 
-The water leakage system proposed in this work is composed by the main mather board that is an STM32 Nucleo-F44ZE connected with two sensors, a PIR motion sensor and a water flow sensor, and two actuators, one led and one active buzzer. (Refer to [Technology]() document for details)
+After connecting all the components as shown above we need to run our virtual environment:
+- Setup of the virtual networks using the RIOT tapsetup interfaces
+- Start our MQTT-SN/MQTT transparent bridge that establish a connection with AWS
+- Start Mosquitto RSMB that that establish a connection with the transparent bridge
 
-The two sensors monitor wether there is mouvement near the monitored tap and wether there is a water flow through the tap. If there is some water flow through the tap with no mouvement detected near the tap then the system notyfies a leakage of water. When the leakage of water is detected the buzzer is activated with the goal to draw someone’s attention that can easy solve the problem, for example a faucet left open can be closed easily and quickly by anyone.
+Then we need to deploy our main program, after flashing it to the Nucleo board we have to:
+- Set a global IPv6 address for the board
+- Connect the board to Mosquitto RSMB
+- Start the main program by executing the command "run"
 
-In the meanwhile that the system monitors the environment it sends packets containing the collected data to the cloud. Each message sends to the cloud contains information about water flow, mouvement detected and if there is a leak of water. 
-These information are written in a JSON format of the following form {"water": int, "mouvement": int, "leak": int} where the water and mouvement field contain the values reported by the sensors and the "leak" field is a binary value set to 1 if there is a leak of water otherwise 0.
+All the detail about the virtual deployment of our system are available in the [code section](https://github.com/FrancescoCrino/water-leakage-detection-system/tree/main/code).
 
+When the system start the led is immediately powered on and the sensor start collecting data. While there is no water flow coming out from the tap the system sample each 20 seconds, when there some water flow detected the system starts sampling each 10 seconds. If there is some water flow detected without any movement the system detects a possible leak. After two possible leak the system notify a leak and the buzz launch the acoustic signal. In order to stop the acoustic signal and reset the system it is required to close the tap.
 
-## Evaluation
+N.B., Each time the PIR detect a movement it sends a positive signal for many seconds (depends on the regualtion) but after the HIGH period it sends a LOW signal for 3 seconds and motion is not detected. In order to be sure that there is no movement, when the system reads a 0 on the motion pin it performs another read after 3 seconds, if this new read is 0 then there is no movement otherwise the first read was a false negative.
+The following image shows an example to better understand how the PIR works.
+
+*Mettere immagine PIR*
+
+Each time the system sample the sensors data it send the collected data to AWS and the data are stored in a dynamoDB table.
+The user can access to the web page that shows the 15 most recent data stored on the cloud.
+
+Further instruction of how deploying the front-end locally are available here: [front-end section]()
+
+Finally a video showing how to deploy the virtual environment, how to start the system and how the system work is available here: [Prototype video]()
+
 
