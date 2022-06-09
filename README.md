@@ -118,8 +118,8 @@ The following image shows an example to better understand how the PIR works.
 Each time the system sample the sensors data it send the collected data to AWS and the data are stored in a dynamoDB table.
 The user can access to the web page that shows the 15 most recent data stored on the cloud.
 
-Further instruction of how deploying the front-end locally are available here: [front-end section]()
+Further instruction of how deploying the front-end locally are available here: [front-end section](https://github.com/FrancescoCrino/water-leakage-detection-system/tree/main/FrontEnd)
 
-Finally a video showing how to deploy the virtual environment, how to start the system and how the system work is available here: [Prototype video]()
+Finally a video showing how to deploy the virtual environment, how to start the system and how the system work is available here: [Prototype video](https://youtu.be/lUWytAzB21o)
 
 
