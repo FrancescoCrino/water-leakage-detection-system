@@ -28,7 +28,7 @@ sudo ip a a fec0:affe::1/64 dev tapbr0
 **Start the mosquitto MQTT-SN/MQTT transparent bridge**
 
 Now we can start our mosuqitto that will act as MQTT-SN/MQTT transparent bridge. 
-With the following command we will launch mosquitto that will use as a configuration file the file my_local_bridge.conf contained in the conf folder.
+With the following command we will launch mosquitto that will use as a configuration file the file my_local_bridge.conf contained in the [conf directory](https://github.com/FrancescoCrino/water-leakage-detection-system/tree/main/conf).
 Just to be safe we will execute the command to stop mosquitto service before to run our new instance of mosquitto.
 
 ```
@@ -42,12 +42,13 @@ You need to replace the information related to the aws service you want to conne
 **Start the mosquitto RSMB MQTT-SN server**
 
 Now that our transparet bridge is set up we can start the mosquitto RSMB MQTT-SN server.
+Put the file rsmb-config.conf located in conf directory [conf directory](https://github.com/FrancescoCrino/water-leakage-detection-system/tree/main/conf) inside the folder mosquitto.rsmb/rsmb and execute the following command:
 
 
 ```
 cd .../mosquitto.rsmb/rsmb
 
-./src/broker_mqtts config.conf
+./src/broker_mqtts rsmb-config.conf
 ```
 
 Executing those commands rsmb server will connect with the mosquitto transparent bridge and it is ready to receive and forward messages.
