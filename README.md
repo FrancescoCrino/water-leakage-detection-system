@@ -50,11 +50,11 @@ The network architechture of the system is a chain of elements exchanging messag
   
 
 
-- ***Front-End***: The front-end is a http web page developed using django framework. The page sends an API request to AWS that returns the 15 most recent data stored in the DynamoDB table. When the data are received they are used to plot a graph showing three lines: one representing the water data, one representing the mouvement data and one for the leak.
+- ***Front-End***: <br/> The front-end is a http web page developed using django framework. The page sends an API request to AWS that returns the 15 most recent data stored in the DynamoDB table. When the data are received they are used to plot a graph showing three lines: one representing the water data, one representing the mouvement data and one for the leak. The page shows also three more plots each dedicated to water, movement and leak data in order to have a more clear view of waht is going on. <img src="images/site.JPG" width="700" align="center"/> <br/>
 
-*Mettere immagine frontend*
 
-- ***Circuit Architecture***: The circuit model is the following: <br/> <img src="images/wl-phis-arch.png" width="500" /> <br/> 
+
+- ***Circuit Architecture***: <br/> The circuit model is the following: <br/> <img src="images/wl-phis-arch.png" width="500" /> <br/> 
   - The bread board is connected with the ground pin of the board and with the 5V pin of the board, then all the sensors and the actuator are fed with 5V. 
   - We put a resistor of 220Ohm in series with the led. They are connected directly to the 5V line. 
   - The active buzzer is connecte to the pin D2 of our board and it is activated in case of leak.
@@ -113,7 +113,7 @@ When the system start the led is immediately powered on and the sensor start col
 N.B., Each time the PIR detect a movement it sends a positive signal for many seconds (depends on the regualtion) but after the HIGH period it sends a LOW signal for 3 seconds and motion is not detected. In order to be sure that there is no movement, when the system reads a 0 on the motion pin it performs another read after 3 seconds, if this new read is 0 then there is no movement otherwise the first read was a false negative.
 The following image shows an example to better understand how the PIR works.
 
-*Mettere immagine PIR*
+<img src="images/pir-dutycycle.JPG" width="1000" align="center"/>
 
 Each time the system sample the sensors data it send the collected data to AWS and the data are stored in a dynamoDB table.
 The user can access to the web page that shows the 15 most recent data stored on the cloud.
