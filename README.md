@@ -135,8 +135,11 @@ With regard to the front-end part we can inspect the webapage to have some infor
 Finally we can hestimate the global delay nucleo->front-end to be less than 2 seconds and this latency is short enough to guarantee a good usability of the system.
 
 
+## Links
 
+Prototype Video:https://www.youtube.com/watch?v=lUWytAzB21o
 
+Blog Post: https://www.hackster.io/fgcrino/water-leakage-detection-system-35ccdb
 
 
 
