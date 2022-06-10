@@ -122,4 +122,21 @@ Further instruction of how deploying the front-end locally are available here: [
 
 Finally a video showing how to deploy the virtual environment, how to start the system and how the system work is available here: [Prototype video](https://youtu.be/lUWytAzB21o)
 
+## Network Performances
+
+In the network there are only uplink messages (nucleo board -> aws) containing information about the data collected by the sensors that are stored in aws dynamoDB. <br/>
+
+The nucleo board collects the sensors data and sends them in a payload of the shape '{"water":int, "movement":int, "leak":int}'. That kind of payload has a length of 36 bytes. <br/>
+
+In order to measure the delay from when the nucleo board sends the data to when they are stored in the dynamoDB table we need to the time when the mosquitto rsmb receives the publish request and the timestamp of the new entry in the dynamoDB table. Considering these parameters we have a delay nucleo->dynamoDB that is less then 1 secoond.
+
+With regard to the front-end part we can inspect the webapage to have some information about its performances. I have used the built in inspection console of Firefox and I have that for the first opening of the webpage (no chache) it needs about 1 second to get the data calling the API, while if refreshing the page it needs about 600ms to retireve the data. <br/>
+
+Finally we can hestimate the global delay nucleo->front-end to be less than 2 seconds and this latency is short enough to guarantee a good usability of the system.
+
+
+
+
+
+
 
